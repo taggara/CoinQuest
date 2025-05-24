@@ -1,200 +1,177 @@
 import { Transaction, TransactionCreate, TransactionFilter } from '@/types';
 import { Database } from '@/services/database';
 
-const db = Database.getInstance();
+// Mock transactions for demo
+const mockTransactions: Transaction[] = [
+  {
+    id: 1,
+    date: '2023-05-01T08:30:00Z',
+    type: 'expense',
+    amount: 45.99,
+    category: 'Groceries',
+    categoryId: 1,
+    merchant: 'Whole Foods',
+    merchantId: 1,
+    notes: 'Weekly groceries'
+  },
+  {
+    id: 2,
+    date: '2023-05-03T12:15:00Z',
+    type: 'expense',
+    amount: 12.50,
+    category: 'Food & Dining',
+    categoryId: 2,
+    merchant: 'Starbucks',
+    merchantId: 2,
+    notes: 'Coffee with colleagues'
+  },
+  {
+    id: 3,
+    date: '2023-05-05T14:20:00Z',
+    type: 'income',
+    amount: 2000.00,
+    category: 'Salary',
+    categoryId: 3,
+    merchant: 'ABC Company',
+    merchantId: 3,
+    notes: 'Monthly salary'
+  },
+  {
+    id: 4,
+    date: '2023-05-10T09:45:00Z',
+    type: 'expense',
+    amount: 89.99,
+    category: 'Entertainment',
+    categoryId: 4,
+    merchant: 'Netflix',
+    merchantId: 4,
+    notes: 'Annual subscription'
+  },
+  {
+    id: 5,
+    date: '2023-05-15T17:30:00Z',
+    type: 'expense',
+    amount: 42.75,
+    category: 'Transportation',
+    categoryId: 5,
+    merchant: 'Gas Station',
+    merchantId: 5,
+    notes: 'Fuel refill'
+  }
+];
+
+let transactions = [...mockTransactions];
+let nextId = transactions.length + 1;
 
 export const fetchTransactions = async (filters?: TransactionFilter): Promise<Transaction[]> => {
-  let query = `
-    SELECT 
-      t.id,
-      t.date,
-      t.type,
-      t.amount,
-      c.name as category,
-      t.category_id as categoryId,
-      m.name as merchant,
-      t.merchant_id as merchantId,
-      t.notes
-    FROM transactions t
-    JOIN categories c ON t.category_id = c.id
-    JOIN merchants m ON t.merchant_id = m.id
-    WHERE 1=1
-  `;
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
   
-  const params: any[] = [];
-
+  let result = [...transactions];
+  
   if (filters) {
+    // Apply filters
     if (filters.searchQuery) {
-      query += ` AND (m.name LIKE ? OR c.name LIKE ? OR t.notes LIKE ?)`;
-      const searchTerm = `%${filters.searchQuery}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      const query = filters.searchQuery.toLowerCase();
+      result = result.filter(t => 
+        t.merchant.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query) ||
+        t.notes?.toLowerCase().includes(query)
+      );
     }
-
+    
     if (filters.startDate) {
-      query += ` AND t.date >= ?`;
-      params.push(filters.startDate);
+      result = result.filter(t => new Date(t.date) >= new Date(filters.startDate as string));
     }
-
+    
     if (filters.endDate) {
-      query += ` AND t.date <= ?`;
-      params.push(filters.endDate);
+      result = result.filter(t => new Date(t.date) <= new Date(filters.endDate as string));
     }
-
+    
     if (filters.categories && filters.categories.length > 0) {
-      query += ` AND t.category_id IN (${filters.categories.join(',')})`;
+      result = result.filter(t => filters.categories.includes(t.categoryId));
     }
-
+    
     if (filters.merchants && filters.merchants.length > 0) {
-      query += ` AND t.merchant_id IN (${filters.merchants.join(',')})`;
+      result = result.filter(t => filters.merchants.includes(t.merchantId));
     }
-
+    
     if (filters.transactionType) {
-      query += ` AND t.type = ?`;
-      params.push(filters.transactionType);
+      result = result.filter(t => t.type === filters.transactionType);
     }
-
-    query += ` ORDER BY t.date ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return filters.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
   } else {
-    query += ` ORDER BY t.date DESC`;
+    // Default sort by date (newest first)
+    result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
-
-  const result = await db.executeQuery(query, params);
-  return result.rows.map((row: any) => ({
-    id: row.id,
-    date: row.date,
-    type: row.type,
-    amount: row.amount,
-    category: row.category,
-    categoryId: row.categoryId,
-    merchant: row.merchant,
-    merchantId: row.merchantId,
-    notes: row.notes
-  }));
+  
+  return result;
 };
 
 export const fetchRecentTransactions = async (limit: number): Promise<Transaction[]> => {
-  const query = `
-    SELECT 
-      t.id,
-      t.date,
-      t.type,
-      t.amount,
-      c.name as category,
-      t.category_id as categoryId,
-      m.name as merchant,
-      t.merchant_id as merchantId,
-      t.notes
-    FROM transactions t
-    JOIN categories c ON t.category_id = c.id
-    JOIN merchants m ON t.merchant_id = m.id
-    ORDER BY t.date DESC
-    LIMIT ?
-  `;
-
-  const result = await db.executeQuery(query, [limit]);
-  return result.rows.map((row: any) => ({
-    id: row.id,
-    date: row.date,
-    type: row.type,
-    amount: row.amount,
-    category: row.category,
-    categoryId: row.categoryId,
-    merchant: row.merchant,
-    merchantId: row.merchantId,
-    notes: row.notes
-  }));
+  const result = await fetchTransactions();
+  return result.slice(0, limit);
 };
 
 export const getTransaction = async (id: number): Promise<Transaction> => {
-  const query = `
-    SELECT 
-      t.id,
-      t.date,
-      t.type,
-      t.amount,
-      c.name as category,
-      t.category_id as categoryId,
-      m.name as merchant,
-      t.merchant_id as merchantId,
-      t.notes
-    FROM transactions t
-    JOIN categories c ON t.category_id = c.id
-    JOIN merchants m ON t.merchant_id = m.id
-    WHERE t.id = ?
-  `;
-
-  const result = await db.executeQuery(query, [id]);
-  if (result.rows.length === 0) {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const transaction = transactions.find(t => t.id === id);
+  
+  if (!transaction) {
     throw new Error('Transaction not found');
   }
-
-  const row = result.rows[0];
-  return {
-    id: row.id,
-    date: row.date,
-    type: row.type,
-    amount: row.amount,
-    category: row.category,
-    categoryId: row.categoryId,
-    merchant: row.merchant,
-    merchantId: row.merchantId,
-    notes: row.notes
-  };
+  
+  return transaction;
 };
 
 export const addTransaction = async (data: TransactionCreate): Promise<Transaction> => {
-  const query = `
-    INSERT INTO transactions (
-      date,
-      type,
-      amount,
-      category_id,
-      merchant_id,
-      notes
-    ) VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
-  const result = await db.executeQuery(query, [
-    data.date,
-    data.type,
-    data.amount,
-    data.categoryId,
-    data.merchantId,
-    data.notes
-  ]);
-
-  return getTransaction(result.lastInsertId);
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const newTransaction: Transaction = {
+    id: nextId++,
+    ...data
+  };
+  
+  transactions.unshift(newTransaction);
+  
+  return newTransaction;
 };
 
 export const updateTransaction = async (data: Transaction): Promise<Transaction> => {
-  const query = `
-    UPDATE transactions
-    SET 
-      date = ?,
-      type = ?,
-      amount = ?,
-      category_id = ?,
-      merchant_id = ?,
-      notes = ?
-    WHERE id = ?
-  `;
-
-  await db.executeQuery(query, [
-    data.date,
-    data.type,
-    data.amount,
-    data.categoryId,
-    data.merchantId,
-    data.notes,
-    data.id
-  ]);
-
-  return getTransaction(data.id);
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const index = transactions.findIndex(t => t.id === data.id);
+  
+  if (index === -1) {
+    throw new Error('Transaction not found');
+  }
+  
+  transactions[index] = { ...data };
+  
+  return transactions[index];
 };
 
 export const deleteTransaction = async (id: number): Promise<void> => {
-  const query = `DELETE FROM transactions WHERE id = ?`;
-  await db.executeQuery(query, [id]);
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const index = transactions.findIndex(t => t.id === id);
+  
+  if (index === -1) {
+    throw new Error('Transaction not found');
+  }
+  
+  transactions.splice(index, 1);
 };
 
 export const fetchMonthlyData = async (): Promise<{
@@ -204,48 +181,32 @@ export const fetchMonthlyData = async (): Promise<{
   budgetUsed: number;
   budgetTotal: number;
 }> => {
-  const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
-
-  // Get income and expenses
-  const query = `
-    SELECT 
-      type,
-      SUM(amount) as total
-    FROM transactions
-    WHERE date >= ? AND date <= ?
-    GROUP BY type
-  `;
-
-  const result = await db.executeQuery(query, [firstDayOfMonth, lastDayOfMonth]);
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 700));
   
-  let income = 0;
-  let expenses = 0;
-
-  result.rows.forEach((row: any) => {
-    if (row.type === 'income') {
-      income = row.total;
-    } else {
-      expenses = row.total;
-    }
+  // Get current month's transactions
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  const currentMonthTransactions = transactions.filter(t => {
+    const date = new Date(t.date);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
   });
-
-  // Get budget data
-  const budgetQuery = `
-    SELECT SUM(amount) as total
-    FROM budgets
-    WHERE month = ? AND year = ?
-  `;
-
-  const budgetResult = await db.executeQuery(budgetQuery, [now.getMonth() + 1, now.getFullYear()]);
-  const budgetTotal = budgetResult.rows[0]?.total || 0;
-
+  
+  const income = currentMonthTransactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+    
+  const expenses = currentMonthTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
   return {
     income,
     expenses,
     balance: income - expenses,
     budgetUsed: expenses,
-    budgetTotal
+    budgetTotal: 2500 // Mock budget total
   };
 };
