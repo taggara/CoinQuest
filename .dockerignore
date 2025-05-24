@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+web-build
+.expo
+.git
+.env*
+*.md
+.vscode
+.idea
