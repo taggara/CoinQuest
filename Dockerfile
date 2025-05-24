@@ -8,23 +8,11 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy project files
-COPY . .
-
-# Build the web version
-RUN npm run build:web
-
 # Install serve globally
 RUN npm install -g serve
 
 # Expose port 3000
 EXPOSE 3000
 
-# Start the server
+# The entrypoint will be defined in docker-compose.yml
 CMD ["serve", "-s", "web-build", "-l", "3000"]
