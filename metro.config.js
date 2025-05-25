@@ -1,9 +1,9 @@
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-    plugins: [
-      'react-native-reanimated/plugin'
-    ],
-  };
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+config.resolver.alias = {
+  '@': './',
 };
+
+module.exports = config;
