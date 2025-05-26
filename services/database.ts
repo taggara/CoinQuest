@@ -1,7 +1,7 @@
 import { createClient } from '@libsql/client';
 
 const client = createClient({
-  url: 'file:local.db',
+  url: process.env.EXPO_PUBLIC_DATABASE_URL || 'libsql://local.db',
 });
 
 export class Database {
