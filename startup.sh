@@ -7,7 +7,7 @@ APP_DIR="/mnt/user/appdata/coinquest"
 REPO_URL="https://github.com/taggara/CoinQuest"
 
 # Branch to pull
-BRANCH="main"
+BRANCH="quality"
 
 # Check if the directory exists, if not clone the repository
 if [ ! -d "$APP_DIR" ]; then
@@ -20,7 +20,7 @@ fi
 # Install dependencies and build the app
 cd $APP_DIR
 npm install
-npm run build
+npm run dev
 
 # Start the app
-npm start
+#npm start
