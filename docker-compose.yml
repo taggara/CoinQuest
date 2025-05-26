@@ -15,15 +15,18 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DATABASE_URL=${DATABASE_URL}
       - GIT_AUTH_TOKEN=${GIT_AUTH_TOKEN}
-      - HOST=${HOST:-0.0.0.0}
-      - PORT=${PORT:-8099}
+      - HOST=0.0.0.0
+      - PORT=8099
+      - PUID=99
+      - PGID=100
     command: >
-      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git ${APPDATA_PATH:-/mnt/user/appdata/coinquest} && 
+      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /app && 
+            cd /app &&
             npm install && 
             npm run build:web && 
-            serve -s web-build -l ${PORT:-8099} -H ${HOST:-0.0.0.0}"
+            serve -s web-build -l 8099 -H 0.0.0.0"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://${HOST:-0.0.0.0}:${PORT:-8099}/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8099"]
       interval: 30s
       timeout: 3s
       retries: 3
