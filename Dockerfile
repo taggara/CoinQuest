@@ -1,18 +1,25 @@
-FROM node:20-slim
+# Use an official Node.js runtime as a parent image
+FROM node:latest
 
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /appdata
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package.json and package-lock.json (if available)
+COPY package*.json ./
 
-# Install serve globally
-RUN npm install -g serve
+# Install any needed packages specified in package.json
+RUN npm install
 
-# Expose port 3000
-EXPOSE 8099
+# Copy the current directory contents into the container at /appdata
+COPY . .
 
-# The entrypoint will be defined in docker-compose.yml
-CMD ["serve", "-s", "web-build", "-l", "8099", "-H", "192.168.4.52"]
+# Make port 8081 available to the world outside this container
+EXPOSE 8081
+
+# Define environment variable
+ENV NODE_ENV=development
+
+# Run startup.sh when the container launches
+COPY startup.sh .
+RUN chmod +x startup.sh
+CMD ["/bin/bash", "./startup.sh"]
