@@ -23,8 +23,8 @@ COPY . .
 # Build the application
 RUN npm run build:web
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 8099
+EXPOSE 8099
 
-# Start the server
-CMD ["serve", "-s", "web-build", "-l", "3000"]
+# Start the server with specific host and port
+CMD ["serve", "-s", "web-build", "-l", "8099", "-H", "192.168.4.52"]
