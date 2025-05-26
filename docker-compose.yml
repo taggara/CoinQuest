@@ -2,10 +2,11 @@ version: '3.8'
 
 services:
   coinquest:
-    build: 
+    build:
       context: .
       args:
         - GIT_AUTH_TOKEN=${GIT_AUTH_TOKEN}
+    image: taggara/coinquest:latest
     container_name: coinquest
     ports:
       - "${PORT:-8099}:8099"
@@ -18,9 +19,9 @@ services:
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8099}
     command: >
-      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git ${APPDATA_PATH:-/mnt/user/appdata/coinquest} && 
-            npm install && 
-            npm run build:web && 
+      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /app &&  # Updated path here
+            npm install &&  # Ensure this runs in the correct directory
+            npm run build:web &&  # Ensure this runs in the correct directory
             serve -s web-build -l ${PORT:-8099} -H ${HOST:-0.0.0.0}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://${HOST:-0.0.0.0}:${PORT:-8099}/"]
