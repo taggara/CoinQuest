@@ -1,7 +1,7 @@
 import { createClient } from '@libsql/client';
 
 const client = createClient({
-  url: 'file:local.db',
+  url: process.env.EXPO_PUBLIC_DATABASE_URL || 'libsql://local.db',
 });
 
 export class Database {
@@ -77,6 +77,19 @@ export class Database {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories (id),
         UNIQUE(category_id, month, year)
+      )
+    `);
+
+    // Create logs table
+    await this.executeQuery(`
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        level TEXT NOT NULL,
+        message TEXT NOT NULL,
+        details TEXT,
+        component TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
   }
