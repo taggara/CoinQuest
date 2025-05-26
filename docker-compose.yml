@@ -10,7 +10,7 @@ services:
     ports:
       - "8099:8099"
     volumes:
-      - ./data:/app/data
+      - /mnt/user/appdata/coinquest:/app
     environment:
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=${DATABASE_URL}
@@ -18,9 +18,7 @@ services:
       - HOST=192.168.4.52
       - PORT=8099
     command: >
-      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /tmp/app && 
-            cp -r /tmp/app/* /app/ && 
-            rm -rf /tmp/app && 
+      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /mnt/user/appdata/coinquest && 
             npm install && 
             npm run build:web && 
             serve -s web-build -l 8099 -H 192.168.4.52"
