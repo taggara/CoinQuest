@@ -17,7 +17,7 @@ COPY . .
 EXPOSE 8081
 
 # Define environment variable
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 
 # Run startup.sh when the container launches
 COPY startup.sh .
