@@ -1,7 +1,7 @@
 import { createClient } from '@libsql/client';
 
 const client = createClient({
-  url: process.env.EXPO_PUBLIC_DATABASE_URL || 'libsql://localhost/local.db',
+  url: process.env.EXPO_PUBLIC_DATABASE_URL || 'libsql://local.db',
 });
 
 export class Database {
@@ -80,7 +80,7 @@ export class Database {
       )
     `);
 
-    // Create logs table with automatic cleanup after 7 days
+    // Create logs table
     await this.executeQuery(`
       CREATE TABLE IF NOT EXISTS logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
