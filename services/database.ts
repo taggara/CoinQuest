@@ -79,6 +79,19 @@ export class Database {
         UNIQUE(category_id, month, year)
       )
     `);
+
+    // Create logs table
+    await this.executeQuery(`
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        level TEXT NOT NULL,
+        message TEXT NOT NULL,
+        details TEXT,
+        component TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
   }
 }
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { StyleSheet, View, Text, Switch, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight, Download, Upload, Trash, Info } from 'lucide-react-native';
+import { ChevronRight, Download, Upload, Trash, Info, List } from 'lucide-react-native';
 
 import { exportData, importData, clearAllData } from '@/services/dataService';
+import { logger, LogLevel } from '@/services/loggingService';
 import ThemeSelector from '@/components/settings/ThemeSelector';
 import CurrencySelector from '@/components/settings/CurrencySelector';
 
@@ -15,8 +16,10 @@ export default function SettingsScreen() {
   const handleExportData = async () => {
     try {
       await exportData();
+      await logger.info('Data exported successfully', 'User initiated data export', 'Settings');
       Alert.alert('Success', 'Data exported successfully');
     } catch (error) {
+      await logger.error('Failed to export data', error instanceof Error ? error.message : String(error), 'Settings');
       console.error('Failed to export data:', error);
       Alert.alert('Error', 'Failed to export data');
     }
@@ -33,8 +36,10 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               await importData();
+              await logger.info('Data imported successfully', 'User initiated data import', 'Settings');
               Alert.alert('Success', 'Data imported successfully');
             } catch (error) {
+              await logger.error('Failed to import data', error instanceof Error ? error.message : String(error), 'Settings');
               console.error('Failed to import data:', error);
               Alert.alert('Error', 'Failed to import data');
             }
@@ -56,8 +61,10 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               await clearAllData();
+              await logger.warning('All data cleared', 'User initiated data clear', 'Settings');
               Alert.alert('Success', 'All data has been cleared');
             } catch (error) {
+              await logger.error('Failed to clear data', error instanceof Error ? error.message : String(error), 'Settings');
               console.error('Failed to clear data:', error);
               Alert.alert('Error', 'Failed to clear data');
             }
@@ -65,6 +72,10 @@ export default function SettingsScreen() {
         },
       ]
     );
+  };
+
+  const handleViewLogs = () => {
+    router.push('/logs');
   };
 
   return (
@@ -142,6 +153,14 @@ export default function SettingsScreen() {
             <View style={styles.actionContent}>
               <Trash size={20} color="#ef4444" style={styles.actionIcon} />
               <Text style={[styles.actionLabel, { color: '#ef4444' }]}>Clear All Data</Text>
+            </View>
+            <ChevronRight size={20} color="#64748b" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionItem} onPress={handleViewLogs}>
+            <View style={styles.actionContent}>
+              <List size={20} color="#0ea5e9" style={styles.actionIcon} />
+              <Text style={styles.actionLabel}>View System Logs</Text>
             </View>
             <ChevronRight size={20} color="#64748b" />
           </TouchableOpacity>
