@@ -9,22 +9,25 @@ services:
     image: taggara/coinquest:latest
     container_name: coinquest
     ports:
-      - "${PORT:-8099}:8099"
+      - "${PORT:-8089}:8089"
     volumes:
-      - ${APPDATA_PATH:-/mnt/user/appdata/coinquest}:/app
+      - /mnt/user/appdata/coinquest:/app/appdata
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=sqlite:///app/appdata/data/local.db
       - GIT_AUTH_TOKEN=${GIT_AUTH_TOKEN}
       - HOST=${HOST:-0.0.0.0}
-      - PORT=${PORT:-8099}
+      - PORT=${PORT:-8089}
+      - PUID=99
+      - PGID=100
     command: >
-      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /app &&  # Updated path here
-            npm install &&  # Ensure this runs in the correct directory
-            npm run build:web &&  # Ensure this runs in the correct directory
-            serve -s web-build -l ${PORT:-8099} -H ${HOST:-0.0.0.0}"
+      sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /app/appdata &&  # Updated path here
+            cd /app/appdata &&  # Ensure commands run in the correct directory
+            npm install &&
+            npm run build:web &&
+            serve -s web-build -l ${PORT:-8089} -H ${HOST:-0.0.0.0}"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://${HOST:-0.0.0.0}:${PORT:-8099}/"]
+      test: ["CMD", "curl", "-f", "http://${HOST:-0.0.0.0}:${PORT:-8089}/"]
       interval: 30s
       timeout: 3s
       retries: 3
