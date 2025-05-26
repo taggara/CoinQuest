@@ -13,11 +13,11 @@ RUN npm install
 # Copy the current directory contents into the container at /appdata
 COPY . .
 
-# Make port 8099 available to the world outside this container
-EXPOSE 8099
+# Make port 8081 available to the world outside this container
+EXPOSE 8081
 
 # Define environment variable
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 
 # Run startup.sh when the container launches
 COPY startup.sh .
