@@ -8,22 +8,24 @@ services:
         - GIT_AUTH_TOKEN=${GIT_AUTH_TOKEN}
     container_name: coinquest
     ports:
-      - "8099:3000"
+      - "8099:8099"
     volumes:
       - ./data:/app/data
     environment:
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=${DATABASE_URL}
       - GIT_AUTH_TOKEN=${GIT_AUTH_TOKEN}
+      - HOST=192.168.4.52
+      - PORT=8099
     command: >
       sh -c "git clone https://oauth2:${GIT_AUTH_TOKEN}@github.com/taggara/coinquest.git /tmp/app && 
             cp -r /tmp/app/* /app/ && 
             rm -rf /tmp/app && 
             npm install && 
             npm run build:web && 
-            serve -s web-build -l 3000"
+            serve -s web-build -l 8099 -H 192.168.4.52"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: ["CMD", "curl", "-f", "http://192.168.4.52:8099/"]
       interval: 30s
       timeout: 3s
       retries: 3
