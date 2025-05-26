@@ -72,7 +72,7 @@ export default function LogsScreen() {
 
       <SafeAreaView style={styles.container} edges={['right', 'left']}>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#0ea5e9" style={styles.loader} />
+          <ActivityIndicator size="large\" color="#0ea5e9\" style={styles.loader} />
         ) : (
           <ScrollView style={styles.scrollView}>
             {logs.length === 0 ? (
