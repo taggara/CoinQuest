@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 # Install serve globally
 RUN npm install -g serve
 
-# Expose port 3000
+# Expose port 8089
 EXPOSE 8099
 
 # The entrypoint will be defined in docker-compose.yml
