@@ -2,37 +2,39 @@
 <Container version="2">
     <Name>CoinQuest</Name>
     <Repository>taggara/coinquest</Repository>
+    <Registry />
     <Network>bridge</Network>
     <MyIP />
-    <Shell>sh</Shell>
+    <Shell>bash</Shell>
     <Privileged>false</Privileged>
     <Support>https://github.com/taggara/coinquest/issues</Support>
     <Project>https://github.com/taggara/coinquest</Project>
-    <Overview>CoinQuest is a personal finance tracking application built with Expo and React Native. It helps users manage their expenses, track budgets, and analyze spending patterns.</Overview>
+    <Overview>CoinQuest is a personal finance tracking application built with Expo and React Native.</Overview>
     <Category>Productivity: Tools:</Category>
-    <WebUI>http://[IP]:[PORT:8099]</WebUI>
+    <WebUI>http://[IP]:[PORT:8081]</WebUI>
     <TemplateURL />
     <Icon>https://i.imgur.com/Ai3kngp.png</Icon>
-    <PostArgs />
+    <ExtraParams />
+    <PostArgs>/bin/bash /appdata/startup.sh</PostArgs>
     <CPUset />
-    <DateInstalled>1716700800</DateInstalled>
+    <DateInstalled>1748299115</DateInstalled>
     <DonateText />
     <DonateLink />
     <Requires />
-    <Config Name="WebUI Port" Target="PORT" Default="8099" Mode="tcp" Description="Web UI port"
-        Type="Port" Display="always" Required="true" Mask="false">8099</Config>
-    <Config Name="App Data" Target="APPDATA_PATH" Default="/mnt/user/appdata/coinquest" Mode="rw"
+    <Config Name="WebUI Port" Target="8081" Default="8081" Mode="tcp" Description="Web UI port"
+        Type="Port" Display="always" Required="true" Mask="false">8081</Config>
+    <Config Name="App Data" Target="/appdata" Default="/mnt/user/appdata/coinquest" Mode="rw"
         Description="Application data directory" Type="Path" Display="always" Required="true"
-        Mask="false">/mnt/user/appdata/coinquest</Config>
+        Mask="false">/mnt/user/appdata/coinquest/</Config>
     <Config Name="Environment" Target="NODE_ENV" Default="production" Mode=""
         Description="Node environment" Type="Variable" Display="always" Required="true" Mask="false">
-        production</Config>
+        development</Config>
     <Config Name="Database" Target="DATABASE_URL" Default="sqlite://appdata/data/local.db" Mode=""
         Description="Database connection URL" Type="Variable" Display="always" Required="true"
         Mask="false">sqlite://appdata/data/local.db</Config>
     <Config Name="GitHub Token" Target="GIT_AUTH_TOKEN" Default="" Mode=""
         Description="GitHub Personal Access Token" Type="Variable" Display="always" Required="true"
-        Mask="true" />
+        Mask="true"></Config>
     <Config Name="Host" Target="HOST" Default="0.0.0.0" Mode="" Description="Host to bind to"
         Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
     <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID" Type="Variable"
