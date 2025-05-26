@@ -19,6 +19,7 @@ export interface LogEntry {
 class LoggingService {
   private static instance: LoggingService;
   private db: Database;
+  private readonly RETENTION_DAYS = 7;
 
   private constructor() {
     this.db = Database.getInstance();
@@ -49,6 +50,20 @@ class LoggingService {
     }
   }
 
+  private async cleanupOldLogs(): Promise<void> {
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - this.RETENTION_DAYS);
+      
+      await this.db.executeQuery(
+        `DELETE FROM logs WHERE datetime(timestamp) < datetime(?)`,
+        [cutoffDate.toISOString()]
+      );
+    } catch (error) {
+      console.error('Failed to cleanup old logs:', error);
+    }
+  }
+
   async log(level: LogLevel, message: string, details?: string, component?: string): Promise<void> {
     try {
       const timestamp = new Date().toISOString();
@@ -57,6 +72,9 @@ class LoggingService {
          VALUES (?, ?, ?, ?, ?)`,
         [timestamp, level, message, details, component]
       );
+      
+      // Clean up old logs after inserting new ones
+      await this.cleanupOldLogs();
     } catch (error) {
       console.error('Failed to write log:', error);
     }
