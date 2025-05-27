@@ -2,7 +2,7 @@ import { createClient } from '@libsql/client';
 
 // Create a single database instance
 const client = createClient({
-  url: 'libsql://local.db',
+  url: 'libsql://appdata/data/local.db',
 });
 
 export class Database {
