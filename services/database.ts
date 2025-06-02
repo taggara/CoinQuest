@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
 
 export class Database {
   private static instance: Database;
@@ -13,13 +13,7 @@ export class Database {
     return Database.instance;
   }
 
-  static async updateConfig(config: {
-    host: string;
-    port: number;
-    database: string;
-    user: string;
-    password: string;
-  }): Promise<void> {
+  static async updateConfig(config: PoolConfig): Promise<void> {
     const instance = Database.getInstance();
     
     // Close existing pool if it exists
@@ -28,15 +22,22 @@ export class Database {
     }
 
     // Create new pool with updated config
-    instance.pool = new Pool(config);
+    instance.pool = new Pool({
+      ...config,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
 
     // Test the connection
     try {
       const client = await instance.pool.connect();
       await client.query('SELECT 1');
       client.release();
+      console.log('Database connection successful');
     } catch (error) {
       instance.pool = null;
+      console.error('Database connection failed:', error);
       throw error;
     }
   }
@@ -50,9 +51,6 @@ export class Database {
     try {
       const result = await client.query(query, params);
       return result;
-    } catch (error) {
-      console.error('Database error:', error);
-      throw error;
     } finally {
       client.release();
     }
@@ -320,7 +318,6 @@ export class Database {
   }
 }
 
-// Initialize database and tables
 export const initDatabase = async (): Promise<void> => {
   try {
     const db = Database.getInstance();
