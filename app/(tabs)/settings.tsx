@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, Switch, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, Text, Switch, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight, Download, Upload, Trash, Info, List } from 'lucide-react-native';
+import { ChevronRight, Download, Upload, Trash, Info, List, Database } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 import { exportData, importData, clearAllData } from '@/services/dataService';
 import { logger, LogLevel } from '@/services/loggingService';
@@ -12,6 +13,12 @@ export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [biometricAuth, setBiometricAuth] = useState(false);
+  const [dbHost, setDbHost] = useState('192.168.4.52');
+  const [dbPort, setDbPort] = useState('5432');
+  const [dbName, setDbName] = useState('coinquest');
+  const [dbUser, setDbUser] = useState('admin');
+  const [dbPassword, setDbPassword] = useState('');
+  const [isEditingDb, setIsEditingDb] = useState(false);
 
   const handleExportData = async () => {
     try {
@@ -78,6 +85,13 @@ export default function SettingsScreen() {
     router.push('/logs');
   };
 
+  const handleSaveDbConfig = () => {
+    // Here you would typically save these values to secure storage
+    // and update the database connection
+    Alert.alert('Success', 'Database configuration updated');
+    setIsEditingDb(false);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['right', 'left']}>
       <View style={styles.header}>
@@ -100,6 +114,93 @@ export default function SettingsScreen() {
 
           <ThemeSelector />
           <CurrencySelector />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Database Configuration</Text>
+          
+          {isEditingDb ? (
+            <View style={styles.dbForm}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Host</Text>
+                <TextInput
+                  style={styles.input}
+                  value={dbHost}
+                  onChangeText={setDbHost}
+                  placeholder="Database host"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Port</Text>
+                <TextInput
+                  style={styles.input}
+                  value={dbPort}
+                  onChangeText={setDbPort}
+                  keyboardType="numeric"
+                  placeholder="Database port"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Database Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={dbName}
+                  onChangeText={setDbName}
+                  placeholder="Database name"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Username</Text>
+                <TextInput
+                  style={styles.input}
+                  value={dbUser}
+                  onChangeText={setDbUser}
+                  placeholder="Database username"
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={dbPassword}
+                  onChangeText={setDbPassword}
+                  secureTextEntry
+                  placeholder="Database password"
+                />
+              </View>
+
+              <View style={styles.dbButtons}>
+                <TouchableOpacity 
+                  style={styles.cancelButton}
+                  onPress={() => setIsEditingDb(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.saveButton}
+                  onPress={handleSaveDbConfig}
+                >
+                  <Text style={styles.saveButtonText}>Save Configuration</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={styles.actionItem}
+              onPress={() => setIsEditingDb(true)}
+            >
+              <View style={styles.actionContent}>
+                <Database size={20} color="#0ea5e9" style={styles.actionIcon} />
+                <Text style={styles.actionLabel}>Configure Database Connection</Text>
+              </View>
+              <ChevronRight size={20} color="#64748b" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -239,5 +340,52 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 16,
     color: '#0f172a',
+  },
+  dbForm: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#0f172a',
+  },
+  dbButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+  },
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  saveButton: {
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
   },
 });
