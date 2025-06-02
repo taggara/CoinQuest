@@ -85,11 +85,29 @@ export default function SettingsScreen() {
     router.push('/logs');
   };
 
-  const handleSaveDbConfig = () => {
-    // Here you would typically save these values to secure storage
-    // and update the database connection
-    Alert.alert('Success', 'Database configuration updated');
-    setIsEditingDb(false);
+  const handleSaveDbConfig = async () => {
+    try {
+      await Database.updateConfig({
+        host: dbHost,
+        port: parseInt(dbPort, 10),
+        database: dbName,
+        user: dbUser,
+        password: dbPassword,
+      });
+
+      // Test the connection
+      const db = Database.getInstance();
+      await db.executeQuery('SELECT 1');
+
+      Alert.alert('Success', 'Database configuration updated successfully');
+      setIsEditingDb(false);
+    } catch (error) {
+      console.error('Failed to update database configuration:', error);
+      Alert.alert(
+        'Error',
+        'Failed to connect to database. Please check your configuration.'
+      );
+    }
   };
 
   return (

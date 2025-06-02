@@ -1,21 +1,10 @@
 import { Pool } from 'pg';
 
-// Create a connection pool to the PostgreSQL database
-const pool = new Pool({
-  user: 'admin',
-  host: '192.168.4.52',
-  database: 'coinquest',
-  password: 'x7f2*WdV=M^=Fs&',
-  port: 5432, 
-});
-
 export class Database {
-  static instance: Database;
-  private pool: Pool;
+  private static instance: Database;
+  private pool: Pool | null = null;
 
-  private constructor() {
-    this.pool = pool;
-  }
+  private constructor() {}
 
   static getInstance(): Database {
     if (!Database.instance) {
@@ -24,7 +13,39 @@ export class Database {
     return Database.instance;
   }
 
+  static async updateConfig(config: {
+    host: string;
+    port: number;
+    database: string;
+    user: string;
+    password: string;
+  }): Promise<void> {
+    const instance = Database.getInstance();
+    
+    // Close existing pool if it exists
+    if (instance.pool) {
+      await instance.pool.end();
+    }
+
+    // Create new pool with updated config
+    instance.pool = new Pool(config);
+
+    // Test the connection
+    try {
+      const client = await instance.pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+    } catch (error) {
+      instance.pool = null;
+      throw error;
+    }
+  }
+
   async executeQuery(query: string, params: any[] = []): Promise<any> {
+    if (!this.pool) {
+      throw new Error('Database not configured. Please configure database connection first.');
+    }
+
     const client = await this.pool.connect();
     try {
       const result = await client.query(query, params);
@@ -38,6 +59,10 @@ export class Database {
   }
 
   async initializeTables(): Promise<void> {
+    if (!this.pool) {
+      throw new Error('Database not configured. Please configure database connection first.');
+    }
+
     try {
       // Create transactions table
       await this.executeQuery(`
@@ -49,7 +74,7 @@ export class Database {
           category_id INTEGER NOT NULL,
           merchant_id INTEGER NOT NULL,
           notes TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -59,7 +84,7 @@ export class Database {
           id SERIAL PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
           type TEXT NOT NULL CHECK (type IN ('expense', 'income')),
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -69,7 +94,7 @@ export class Database {
           id SERIAL PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
           category TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -81,7 +106,7 @@ export class Database {
           amount REAL NOT NULL,
           month INTEGER NOT NULL,
           year INTEGER NOT NULL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -89,12 +114,12 @@ export class Database {
       await this.executeQuery(`
         CREATE TABLE IF NOT EXISTS logs (
           id SERIAL PRIMARY KEY,
-          timestamp TEXT NOT NULL,
+          timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
           level TEXT NOT NULL,
           message TEXT NOT NULL,
           details TEXT,
           component TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
