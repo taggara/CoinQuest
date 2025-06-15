@@ -1,25 +1,43 @@
-# Use an official Node.js runtime as a parent image
-FROM node:latest
+FROM python:3.11-slim
 
-# Set the working directory in the container
-WORKDIR /appdata
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
+# Set work directory
+WORKDIR /app
 
-# Install any needed packages specified in package.json
-RUN npm install
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+        curl \
+        && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /appdata
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
 COPY . .
 
-# Make port 8081 available to the world outside this container
-EXPOSE 8081
+# Create necessary directories
+RUN mkdir -p static templates uploads logs
 
-# Define environment variable
-ENV NODE_ENV=development
+# Create non-root user
+RUN adduser --disabled-password --gecos '' appuser \
+    && chown -R appuser:appuser /app
+USER appuser
 
-# Run startup.sh when the container launches
-COPY startup.sh .
-RUN chmod +x startup.sh
-CMD ["/bin/bash", "./startup.sh"]
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run the application
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
