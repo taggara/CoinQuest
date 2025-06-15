@@ -23,7 +23,7 @@ app = FastAPI(title="CoinQuest Finance API", version="1.0.0")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["http://localhost:8081", "http://127.0.0.1:8081", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
