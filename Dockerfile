@@ -1,42 +1,25 @@
-FROM node:18-bullseye
-
-# Install Python and pip
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Use an official Node.js runtime as a parent image
+FROM node:latest
 
 # Set the working directory in the container
 WORKDIR /appdata
 
-# Copy package files first for better caching
+# Copy package.json and package-lock.json (if available)
 COPY package*.json ./
-COPY requirements.txt ./
 
-# Install Node.js dependencies
+# Install any needed packages specified in package.json
 RUN npm install
 
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
-
-# Copy the rest of the application
+# Copy the current directory contents into the container at /appdata
 COPY . .
 
-# Create data directory
-RUN mkdir -p /appdata/data
-
-# Set environment variables
-ENV NODE_ENV=development
-ENV HOST=0.0.0.0
-ENV PORT=8081
-ENV DATABASE_URL=postgresql://admin:@192.168.4.52:5432/coinquest
-
-# Expose port 8081
+# Make port 8081 available to the world outside this container
 EXPOSE 8081
 
-# Make startup script executable
-RUN chmod +x startup.sh
+# Define environment variable
+ENV NODE_ENV=development
 
-# Run startup script
-CMD ["./startup.sh"]
+# Run startup.sh when the container launches
+COPY startup.sh .
+RUN chmod +x startup.sh
+CMD ["/bin/bash", "./startup.sh"]
