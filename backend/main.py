@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import uvicorn
 from datetime import datetime, date
+import os
 
 from database import get_db, engine
 from models import Base, Transaction, Category, Merchant, Budget
@@ -20,10 +21,10 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CoinQuest Finance API", version="1.0.0")
 
-# CORS middleware
+# CORS middleware - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8081", "http://127.0.0.1:8081", "*"],
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -216,5 +217,14 @@ def get_monthly_data(
         budget_total=budget_total
     )
 
+# Health check endpoint
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "message": "CoinQuest API is running"}
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("BACKEND_PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    
+    print(f"Starting CoinQuest API on {host}:{port}")
+    uvicorn.run(app, host=host, port=port, reload=False)
