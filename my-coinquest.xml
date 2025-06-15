@@ -9,7 +9,7 @@
     <Privileged>false</Privileged>
     <Support>https://github.com/taggara/coinquest/issues</Support>
     <Project>https://github.com/taggara/coinquest</Project>
-    <Overview>CoinQuest is a personal finance tracking application built with React and Python FastAPI.</Overview>
+    <Overview>CoinQuest is a personal finance tracking application built with Expo and React Native.</Overview>
     <Category>Productivity: Tools:</Category>
     <WebUI>http://[IP]:[PORT:8081]</WebUI>
     <TemplateURL />
@@ -26,14 +26,14 @@
     <Config Name="App Data" Target="/appdata" Default="/mnt/user/appdata/coinquest" Mode="rw"
         Description="Application data directory" Type="Path" Display="always" Required="true"
         Mask="false">/mnt/user/appdata/coinquest/</Config>
-    <Config Name="Environment" Target="NODE_ENV" Default="development" Mode=""
+    <Config Name="Environment" Target="NODE_ENV" Default="production" Mode=""
         Description="Node environment" Type="Variable" Display="always" Required="true" Mask="false">
         development</Config>
-    <Config Name="Database" Target="DATABASE_URL" Default="postgresql://admin:@192.168.4.52:5432/coinquest" Mode=""
+    <Config Name="Database" Target="DATABASE_URL" Default="sqlite://appdata/data/local.db" Mode=""
         Description="Database connection URL" Type="Variable" Display="always" Required="true"
-        Mask="false">postgresql://admin:@192.168.4.52:5432/coinquest</Config>
+        Mask="false">sqlite://appdata/data/local.db</Config>
     <Config Name="GitHub Token" Target="GIT_AUTH_TOKEN" Default="" Mode=""
-        Description="GitHub Personal Access Token" Type="Variable" Display="advanced" Required="false"
+        Description="GitHub Personal Access Token" Type="Variable" Display="always" Required="true"
         Mask="true"></Config>
     <Config Name="Host" Target="HOST" Default="0.0.0.0" Mode="" Description="Host to bind to"
         Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
